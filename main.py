@@ -1,6 +1,7 @@
 import random
 import math
 import json
+import time
 
 monsters = {
     "Goblin": {"lvh": 20, "lvl": 1,"hp": 50, "atk": 20, "df": 15, "spd": 35, "xpdf": 5, "g": 5},
@@ -126,6 +127,26 @@ def choose_class(num):
         return "Healer"
     else:
         return False
+
+def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, monstername):
+    global player_temp_hp, monster_temp_hp
+    player_temp_hp = playerhp
+    monster_temp_hp = monsterhp
+    while True:
+        damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
+        monster_temp_hp -= damage_to_monster
+        print(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+        if monster_temp_hp <= 0:
+            print("You defeated the monster!")
+            return True
+        damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+        player_temp_hp -= damage_to_player
+        print(f"{monstername} dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+        if player_temp_hp <= 0:
+            print("You were defeated by the monster.")
+            return False
+        time.sleep(1)
+
 while True:
     try:
         with open("data.json", "r") as f:
