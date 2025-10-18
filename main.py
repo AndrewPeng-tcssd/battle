@@ -10,8 +10,10 @@ monsters = {
     "Bandit": {"lvh": 35, "lvl": 5,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 20, "g": 25},
 }
 
-lvtemp = 0
-goldtemp = 0
+lvtemp = None
+goldtemp = None
+player_temp_hp = None
+monster_temp_hp = None
 
 class Player:
     def __init__(self, name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts):
