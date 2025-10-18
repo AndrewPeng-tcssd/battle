@@ -4,8 +4,8 @@ import json
 import time
 
 monsters = {
-    "Goblin": {"lvh": 20, "lvl": 1,"hp": 50, "atk": 20, "df": 15, "spd": 35, "xpdf": 5, "g": 5},
-    "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 30, "atk": 25, "df": 5, "spd": 40, "xpdf": 10, "g": 5},
+    "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "xpdf": 5, "g": 5},
+    "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "xpdf": 10, "g": 5},
     "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 5, "df": 20, "spd": 40, "xpdf": 10, "g": 10},
     "Wolf": {"lvh": 30, "lvl": 4,"hp": 60, "atk": 30, "df": 10, "spd": 30, "xpdf": 15, "g": 15},
     "Bandit": {"lvh": 35, "lvl": 5,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 20, "g": 25},
@@ -15,9 +15,11 @@ lvtemp = None
 goldtemp = None
 player_temp_hp = None
 monster_temp_hp = None
+win = None
+
 
 class Player:
-    def __init__(self, name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts):
+    def __init__(self, name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready):
         self.name = name
         self.class_type = class_type
         self.lv = lv
@@ -28,6 +30,7 @@ class Player:
         self.spd = spd
         self.gold = gold
         self.upg_pts = upg_pts
+        self.ready = ready
 
     def level_up(self):
         self.lv += 1
@@ -63,16 +66,18 @@ class Player:
         else:
             print("Not enough upgrade points.")
     
-    def gain(self, lv, xp, gold):
+    def gain(self, monlv, xp, gold):
         global lvtemp, goldtemp
         lvtemp = self.lv
         goldtemp = self.gold
-        if lv == 0:
+        if monlv == 0:
             self.xp += xp
             self.gold += gold
         else:
-            self.xp += math.round(xp*(1/(self.lv/(self.lv/(self.lv-lv)))))
-            self.gold += math.round(gold*(1/(self.lv/(self.lv/(self.lv-lv)))))
+            self.xp += round(xp*(1/(self.lv/(self.lv/abs(self.lv-(monlv+1))))))
+            self.gold += round(gold*(1/(self.lv/(self.lv/abs(self.lv-(monlv+1))))))
+            print(self.xp)
+            print(self.gold)
         while self.xp >= self.lv+1:
             self.xp -= (self.lv+1)
             self.level_up()
@@ -87,12 +92,12 @@ class Monster:
     def __init__(self, monster, lv, xp, hp, atk, df, spd, g):
         self.name = monster
         self.lv = lv
-        self.xp = xp
-        self.hp = hp
-        self.atk = atk
-        self.df = df
-        self.spd = spd
-        self.gold = g
+        self.xp = xp + lv
+        self.hp = hp + lv
+        self.atk = atk + lv
+        self.df = df + lv
+        self.spd = spd + lv
+        self.gold = g + lv
 
     def die(self):
         return self.lv, self.xp, self.gold
@@ -117,19 +122,19 @@ def choose_attribute_add(num):
 def choose_class(num):
     global Player
     if num == "1":
-        Player = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, 0, 6)
+        Player = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, 0, 6, False)
         return "Berserker"
     elif num == 2:
-        Player = Player(name, "Mage", 1, 0, 25, 10, 10, 10, 0, 6)
+        Player = Player(name, "Mage", 1, 0, 20, 10, 10, 10, 0, 6, False)
         return "Mage"
     elif num == 3:
-        Player = Player(name, "Healer", 1, 0, 20, 10, 10, 10, 0, 6)
+        Player = Player(name, "Healer", 1, 0, 30, 15, 10, 10, 0, 6, False)
         return "Healer"
     else:
         return False
 
 def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, monstername):
-    global player_temp_hp, monster_temp_hp
+    global player_temp_hp, monster_temp_hp, win
     player_temp_hp = playerhp
     monster_temp_hp = monsterhp
     while True:
@@ -138,12 +143,14 @@ def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, mons
         print(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
         if monster_temp_hp <= 0:
             print("You defeated the monster!")
+            win = True
             return True
         damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
         player_temp_hp -= damage_to_player
         print(f"{monstername} dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         if player_temp_hp <= 0:
             print("You were defeated by the monster.")
+            win = False
             return False
         time.sleep(1)
 
@@ -151,7 +158,6 @@ while True:
     try:
         with open("data.json", "r") as f:
             data = json.load(f)
-            print("Save loaded successfully!")
             name = data["name"]
             class_type = data["class_type"]
             lv = data["lv"]
@@ -162,9 +168,62 @@ while True:
             spd = data["spd"]
             gold = data["gold"]
             upg_pts = data["upg_pts"]
-            Player = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts)
+            ready = data["ready"]
+            Player = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready)
+            if Player.ready == False:
+                print("Welcome to Battle World!")
+                time.sleep(0.5)
+                print("Lets start with the basics.")
+                time.sleep(0.5)
+                print("You can fight monsters to gain experience and gold. Level up to become stronger!")
+                time.sleep(0.5)
+                print(f"Your current stats are:")
+                time.sleep(0.5)
+                print(f"Level: {Player.lv}")
+                time.sleep(0.5)
+                print(f"XP: {Player.xp}/{Player.lv+1}")
+                time.sleep(0.5)
+                print(f"HP: {Player.hp}")
+                time.sleep(0.5)
+                print(f"ATK: {Player.atk}")
+                time.sleep(0.5)
+                print(f"DEF: {Player.df}")
+                time.sleep(0.5)
+                print(f"SPD: {Player.spd}")
+                time.sleep(0.5)
+                print(f"Gold: {Player.gold}")
+                time.sleep(0.5)
+                print(f"Upgrade Points: {Player.upg_pts}")
+                time.sleep(0.5)
+                print("These are all the stats. If you're wondering, speed indicates how fast you can flee from a monster.")
+                print("Now, lets get a monster to fight.")
+                time.sleep(0.5)
+                intro_monster = Monster(list(monsters.keys())[0], monsters["Goblin"]["lvl"], monsters["Goblin"]["xpdf"], monsters["Goblin"]["hp"], monsters["Goblin"]["atk"], monsters["Goblin"]["df"], monsters["Goblin"]["spd"], monsters["Goblin"]["g"])
+                while True:
+                    print(f"A wild {intro_monster.name} has appeared!")
+                    time.sleep(0.5)
+                    print("Prepare for battle!")
+                    time.sleep(0.5)
+                    battle(Player.hp, Player.atk, Player.df, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.name)
+                    if win:
+                        monlv, xp_gain, gold_gain = intro_monster.die()
+                        Player.gain(monlv, xp_gain, gold_gain)
+                        print("You have completed the tutorial!")
+                        Player.ready = True
+                        break
+                    
+                    else:
+                        print("You have failed the tutorial. Please restart the game to try again.")
+                break
+            else:
+                print("Save loaded successfully!")
+                break
+                
     except FileNotFoundError:
-        name = input("Save does not exist. New user detected. Please enter your name: ")
+        print("Save does not exist.")
+        print("New user detected. Welcome to Battle World!")
+        print("Battle World is a text-based RPG where you can fight monsters, level up, and become stronger!")
+        name = input("Please enter your name: ")
         while True:
             print("Welcome to Battle World! Please choose your class(enter the corresponding number).")
             class_num = input("1. Berserker High Speed and Damage. 2. Mage High Speed and Defense 3. Healer Heals or Poisons and high defense ")
@@ -204,8 +263,12 @@ while True:
             "df": Player.df,
             "spd": Player.spd,
             "gold": Player.gold,
-            "upg_pts": Player.upg_pts
+            "upg_pts": Player.upg_pts,
+            "ready": Player.ready
         }
-    with open("data.json", "w") as f:
-        json.dump(data, f)
-        break
+        with open("data.json", "w") as f:
+            json.dump(data, f)
+            break
+
+while Player.ready == True:
+    action = input("What do you want to do? 1. Adventure 2. Apply points 3. Shop ")
