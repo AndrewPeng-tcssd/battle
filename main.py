@@ -170,7 +170,7 @@ while True:
             class_num = input("1. Berserker High Speed and Damage. 2. Mage High Speed and Defense 3. Healer Heals or Poisons and high defense ")
             class_type = choose_class(class_num)
             if class_type:
-                print(f"Congrats! You chose {class_type}!")
+                print(f"You chose {class_type}!")
                 break
             else:
                 print("Not a valid selection")
