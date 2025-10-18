@@ -7,8 +7,9 @@ monsters = {
     "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "xpdf": 5, "g": 5},
     "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "xpdf": 10, "g": 5},
     "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 5, "df": 20, "spd": 40, "xpdf": 10, "g": 10},
-    "Wolf": {"lvh": 30, "lvl": 4,"hp": 60, "atk": 30, "df": 10, "spd": 30, "xpdf": 15, "g": 15},
-    "Bandit": {"lvh": 35, "lvl": 5,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 20, "g": 25},
+    "Wolf": {"lvh": 30, "lvl": 5,"hp": 60, "atk": 30, "df": 10, "spd": 30, "xpdf": 15, "g": 15},
+    "Bandit": {"lvh": 35, "lvl": 10,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 20, "g": 25},
+    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 45, "atk": 10, "df": 30, "spd": 45, "xpdf": 15, "g": 15},
 }
 
 lvtemp = None
