@@ -101,7 +101,7 @@ class Player:
         rand = random.randint(1, 100)
         if rand <= chance:
             self.abilities.update(abi)
-            print(f"You got {abi.keys()}!")
+            print(f"You got {list(abi.keys())[0]}!")
 
 class Monster:
     def __init__(self, monster, lv, xp, hp, atk, df, spd, abilities, abichance, g):
