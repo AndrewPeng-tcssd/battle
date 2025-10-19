@@ -4,12 +4,13 @@ import json
 import time
 
 monsters = {
-    "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "xpdf": 5, "g": 5},
-    "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "xpdf": 10, "g": 5},
-    "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 5, "df": 20, "spd": 40, "xpdf": 10, "g": 10},
-    "Wolf": {"lvh": 30, "lvl": 5,"hp": 60, "atk": 30, "df": 10, "spd": 30, "xpdf": 10, "g": 15},
-    "Bandit": {"lvh": 35, "lvl": 10,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 15, "g": 25},
-    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 45, "atk": 10, "df": 30, "spd": 45, "xpdf": 20, "g": 15},
+    "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 10, "type": "attack"}}, "abidropchance": 100, "xpdf": 5, "g": 5},
+    "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "abilities": {"Ambush": {"power": 5, "type": "scare"}}, "abidropchance": 25, "xpdf": 10, "g": 5},
+    "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 5, "df": 20, "spd": 40, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 10, "g": 10},
+    "Wolf": {"lvh": 30, "lvl": 5,"hp": 60, "atk": 30, "df": 10, "spd": 30, "abilities": {"Slice": {"power": 15, "type": "attack"}}, "abidropchance": 10, "xpdf": 10, "g": 15},
+    "Bandit": {"lvh": 35, "lvl": 10,"hp": 30, "atk": 25, "df": 10, "spd": 40, "abilities": {"Ambush": {"power": 15, "type": "scare"}}, "abidropchance": 3, "xpdf": 15, "g": 25},
+    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 45, "atk": 10, "df": 30, "spd": 45, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 20, "g": 15},
+    "Mafia Boss": {"lvh": 50, "lvl": 20,"hp": 60, "atk": 40, "df": 20, "spd": 25, "abilities": {"Punch": {"power": 10, "type": "attack"}}, "abidropchance": 15, "xpdf": 30, "g": 50},
 }
 
 lvtemp = None
@@ -17,10 +18,12 @@ goldtemp = None
 player_temp_hp = None
 monster_temp_hp = None
 win = None
+playerturn = None
+monsterturn = None
 
 
 class Player:
-    def __init__(self, name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready):
+    def __init__(self, name, class_type, lv, xp, hp, atk, df, spd, abilities, gold, upg_pts, ready):
         self.name = name
         self.class_type = class_type
         self.lv = lv
@@ -29,6 +32,7 @@ class Player:
         self.atk = atk
         self.df = df
         self.spd = spd
+        self.abilities = abilities
         self.gold = gold
         self.upg_pts = upg_pts
         self.ready = ready
@@ -72,7 +76,7 @@ class Player:
         else:
             print("Not enough upgrade points.")
     
-    def gain(self, monlv, xp, gold):
+    def gain(self, monlv, xp, gold, abi, abichance):
         global lvtemp, goldtemp
         lvtemp = self.lv
         goldtemp = self.gold
@@ -93,9 +97,14 @@ class Player:
         if self.gold > goldtemp:
             print(f"You have gained {self.gold - goldtemp} gold.")
             goldtemp = 0
+        chance = abichance
+        rand = random.randint(1, 100)
+        if rand <= chance:
+            self.abilities.update(abi)
+            print(f"You got {abi.keys()}!")
 
 class Monster:
-    def __init__(self, monster, lv, xp, hp, atk, df, spd, g):
+    def __init__(self, monster, lv, xp, hp, atk, df, spd, abilities, abichance, g):
         self.name = monster
         self.lv = lv
         self.xp = xp + lv
@@ -103,10 +112,12 @@ class Monster:
         self.atk = atk + lv
         self.df = df + lv
         self.spd = spd + lv
+        self.abilities = abilities
+        self.abichance = abichance
         self.gold = g + lv
 
     def die(self):
-        return self.lv, self.xp, self.gold
+        return self.lv, self.xp, self.gold, self.abilities, self.abichance
     
 def choose_attribute_add(num):
     if num == "1":
@@ -125,32 +136,74 @@ def choose_attribute_add(num):
 def choose_class(name, num):
     global User
     if num == "1":
-        User = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, 0, 6, False)
+        User = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, {}, 0, 6, False)
         return "Berserker"
     elif num == 2:
-        User = Player(name, "Mage", 1, 0, 20, 10, 10, 10, 0, 6, False)
+        User = Player(name, "Mage", 1, 0, 20, 10, 10, 10, {}, 0, 6, False)
         return "Mage"
     elif num == 3:
-        User = Player(name, "Healer", 1, 0, 30, 15, 10, 10, 0, 6, False)
+        User = Player(name, "Healer", 1, 0, 30, 15, 10, 10, {}, 0, 6, False)
         return "Healer"
     else:
         return False
 
-def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, monstername):
-    global player_temp_hp, monster_temp_hp, win
+def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, monsterdf, monsterabi, monstername):
+    global player_temp_hp, monster_temp_hp, win, playerturn, monsterturn
     player_temp_hp = playerhp
     monster_temp_hp = monsterhp
     while True:
-        damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
-        monster_temp_hp -= damage_to_monster
-        print(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+        playerturn = False
+        monsterturn = False
+        if playerabi == None:
+            pass
+        else:
+            abi = input(f"Which ability do you want to use? {list(playerabi.keys())}")
+            if abi in playerabi.keys():
+                if playerabi[abi]["type"] == "attack":
+                    playeratk = round(playeratk * (1+(playerabi[abi]["power"]/100)))
+                elif playerabi[abi]["type"] == "type":
+                    monsteratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/100)))
+                    stunchance = monsterabi[monabinum]["power"]
+                    while monster_temp_hp > 0:
+                        rand = random.randint(1, 100)
+                        if rand <= stunchance:
+                            damage_to_monster = max(1, monsteratk - random.randint(1, playerdf))
+                            monster_temp_hp -= damage_to_monster
+                        else:
+                            monsterturn = True
+                            break
+        if monsterturn == False:
+            damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
+            monster_temp_hp -= damage_to_monster
+        if playerabi != None:
+            print(f"You used {abi} and dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+        else:
+            print(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
         if monster_temp_hp <= 0:
             print("You defeated the monster!")
             win = True
             return True
-        damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
-        player_temp_hp -= damage_to_player
-        print(f"{monstername} dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+        monabi = (random.randint(1, len(list(monsterabi.keys())))-1)
+        monlist = list(monsterabi.keys())
+        monabinum = monlist[monabi]
+        if monsterabi[monabinum]["type"] == "attack":
+            monsteratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/100)))
+        elif monsterabi[monabinum]["type"] == "scare":
+            monsteratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/100)))
+            stunchance = monsterabi[monabinum]["power"]
+            while player_temp_hp > 0:
+                rand = random.randint(1, 100)
+                if rand <= stunchance:
+                    damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+                    player_temp_hp -= damage_to_player
+                else:
+                    playerturn = True
+                    break
+
+        if playerturn == False:
+            damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+            player_temp_hp -= damage_to_player
+        print(f"{monstername} used {monabi} and dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         if player_temp_hp <= 0:
             print("You were defeated by the monster.")
             win = False
@@ -220,6 +273,7 @@ def save():
         "atk": User.atk,
         "df": User.df,
         "spd": User.spd,
+        "abilities": User.abilities,
         "gold": User.gold,
         "upg_pts": User.upg_pts,
         "ready": User.ready
@@ -238,10 +292,11 @@ def load_save():
     atk = data["atk"]
     df = data["df"]
     spd = data["spd"]
+    abilities = data["abilities"]
     gold = data["gold"]
     upg_pts = data["upg_pts"]
     ready = data["ready"]
-    User = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready)
+    User = Player(name, class_type, lv, xp, hp, atk, df, spd, abilities, gold, upg_pts, ready)
 
 def start_tutorial():
     print("Welcome to Battle World!")
@@ -257,13 +312,13 @@ def start_tutorial():
     print("These are all the stats. If you're wondering, speed indicates how fast you can flee from a monster.")
     print("Now, lets get a monster to fight.")
     time.sleep(1)
-    intro_monster = Monster(list(monsters.keys())[0], monsters["Goblin"]["lvl"], monsters["Goblin"]["xpdf"], monsters["Goblin"]["hp"], monsters["Goblin"]["atk"], monsters["Goblin"]["df"], monsters["Goblin"]["spd"], monsters["Goblin"]["g"])
+    intro_monster = Monster(list(monsters.keys())[0], monsters["Goblin"]["lvl"], monsters["Goblin"]["xpdf"], monsters["Goblin"]["hp"], monsters["Goblin"]["atk"], monsters["Goblin"]["df"], monsters["Goblin"]["spd"], monsters["Goblin"]["abilities"], monsters["Goblin"]["abidropchance"], monsters["Goblin"]["g"])
     while True:
         print(f"A wild {intro_monster.name} has appeared!")
         time.sleep(0.5)
         print("Prepare for battle!")
         time.sleep(0.5)
-        battle(User.hp, User.atk, User.df, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.name)
+        battle(User.hp, User.atk, User.df, None, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.abilities, intro_monster.name)
         if win:
             gain(intro_monster)
             print("You have completed the tutorial!")
@@ -273,9 +328,10 @@ def start_tutorial():
             break
 
 def gain(monster):
-    monlv, xp_gain, gold_gain = monster.die()
-    User.gain(monlv, xp_gain, gold_gain)
+    monlv, xp_gain, gold_gain, abi, abichance = monster.die()
+    User.gain(monlv, xp_gain, gold_gain, abi, abichance)
 
+    
 while True:
     try:
         with open("data.json", "r") as f:

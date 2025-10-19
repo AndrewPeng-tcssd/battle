@@ -1,10 +1,10 @@
 class idk:
-    def __init__(self, val):
-        self.value = val
+    def __init__(self, dictionary):
+        self.dict = dictionary
+    def gain(self, abi):
+        self.dict.update(abi)
 
-yes = idk(1)
-
-def asdf(asd):
-    print(asd.value)
-
-asdf("yes")
+yes = {"1": {"hi": 5}}
+hello = idk({"5":{"bye": 2}})
+hello.gain(yes)
+print(f"he {hello.dict.keys()}")
