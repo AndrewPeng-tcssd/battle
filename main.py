@@ -2,6 +2,7 @@ import random
 import math
 import json
 import time
+import os
 
 monsters = {
     "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 10, "type": "attack"}}, "abidropchance": 100, "xpdf": 5, "g": 5},
@@ -13,6 +14,7 @@ monsters = {
     "Mafia Boss": {"lvh": 50, "lvl": 20,"hp": 60, "atk": 40, "df": 20, "spd": 25, "abilities": {"Punch": {"power": 10, "type": "attack"}}, "abidropchance": 15, "xpdf": 30, "g": 50},
 }
 
+savepath = "data.json"
 lvtemp = None
 goldtemp = None
 player_temp_hp = None
@@ -283,7 +285,8 @@ def save():
 
 def load_save():
     global User
-    data = json.load(f)
+    with open("data.json", "r") as f:
+        data = json.load(f)
     name = data["name"]
     class_type = data["class_type"]
     lv = data["lv"]
@@ -333,18 +336,16 @@ def gain(monster):
 
     
 while True:
-    try:
-        with open("data.json", "r") as f:
-            load_save()
-            if User.ready == False:
-                start_tutorial()
-                User.ready = True
-                break
-            else:
-                print("Save loaded successfully!")
-                break
-                
-    except FileNotFoundError:
+    if os.path.exists(savepath):
+        load_save()
+        if User.ready == False:
+            start_tutorial()
+            User.ready = True
+            break
+        else:
+            print("Save loaded successfully!")
+            break
+    else:
         new_player()
         break
 
