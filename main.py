@@ -121,15 +121,15 @@ def choose_attribute_add(num):
         return False
 
 def choose_class(name, num):
-    global Player
+    global User
     if num == "1":
-        Player = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, 0, 6, False)
+        User = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, 0, 6, False)
         return "Berserker"
     elif num == 2:
-        Player = Player(name, "Mage", 1, 0, 20, 10, 10, 10, 0, 6, False)
+        User = Player(name, "Mage", 1, 0, 20, 10, 10, 10, 0, 6, False)
         return "Mage"
     elif num == 3:
-        Player = Player(name, "Healer", 1, 0, 30, 15, 10, 10, 0, 6, False)
+        User = Player(name, "Healer", 1, 0, 30, 15, 10, 10, 0, 6, False)
         return "Healer"
     else:
         return False
@@ -156,7 +156,7 @@ def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, mons
         time.sleep(1)
 
 def apply_points():
-    while Player.upg_pts > 0:
+    while User.upg_pts > 0:
         type_chosen = None
         choose_attr = input("Enter the corresponding number: 1. HP 2. ATK 3. DEF 4. SPD 5. Gold ")
         while True:
@@ -168,21 +168,21 @@ def apply_points():
         print(f"You have chosen {type_chosen}!")
         while True:
             how_much = input(f"Choose the amount of points you want to apply(If you change your mind, enter 0): ")
-            if int(how_much) <= Player.upg_pts:
-                Player.apply_pts(int(how_much), type_chosen)
+            if int(how_much) <= User.upg_pts:
+                User.apply_pts(int(how_much), type_chosen)
                 break
             else:
                 print("You don't have this much.")
 
 def show_stats():
-    print(f"Level: {Player.lv}")
-    print(f"XP: {Player.xp}/{Player.lv+1}")
-    print(f"HP: {Player.hp}")
-    print(f"ATK: {Player.atk}")
-    print(f"DEF: {Player.df}")
-    print(f"SPD: {Player.spd}")
-    print(f"Gold: {Player.gold}")
-    print(f"Upgrade Points: {Player.upg_pts}")
+    print(f"Level: {User.lv}")
+    print(f"XP: {User.xp}/{User.lv+1}")
+    print(f"HP: {User.hp}")
+    print(f"ATK: {User.atk}")
+    print(f"DEF: {User.df}")
+    print(f"SPD: {User.spd}")
+    print(f"Gold: {User.gold}")
+    print(f"Upgrade Points: {User.upg_pts}")
 
 def new_player():
     print("Save does not exist.")
@@ -202,24 +202,27 @@ def new_player():
     print("Which attribute do you want to put points on? Remember, you can put points on many different things.")
     apply_points()
     print("Done! You have finished setting up. Welcome to Battle World! Please restart the game to load your save.")    
+    save()
+
+def save():
     data = {
-        "name": Player.name,
-        "class_type": Player.class_type,
-        "lv": Player.lv,
-        "xp": Player.xp,
-        "hp": Player.hp,
-        "atk": Player.atk,
-        "df": Player.df,
-        "spd": Player.spd,
-        "gold": Player.gold,
-        "upg_pts": Player.upg_pts,
-        "ready": Player.ready
+        "name": User.name,
+        "class_type": User.class_type,
+        "lv": User.lv,
+        "xp": User.xp,
+        "hp": User.hp,
+        "atk": User.atk,
+        "df": User.df,
+        "spd": User.spd,
+        "gold": User.gold,
+        "upg_pts": User.upg_pts,
+        "ready": User.ready
     }
     with open("data.json", "w") as f:
         json.dump(data, f)
 
 def load_save():
-    global Player
+    global User
     data = json.load(f)
     name = data["name"]
     class_type = data["class_type"]
@@ -232,7 +235,7 @@ def load_save():
     gold = data["gold"]
     upg_pts = data["upg_pts"]
     ready = data["ready"]
-    Player = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready)
+    User = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready)
 
 def start_tutorial():
     print("Welcome to Battle World!")
@@ -254,23 +257,27 @@ def start_tutorial():
         time.sleep(0.5)
         print("Prepare for battle!")
         time.sleep(0.5)
-        battle(Player.hp, Player.atk, Player.df, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.name)
+        battle(User.hp, User.atk, User.df, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.name)
         if win:
-            monlv, xp_gain, gold_gain = intro_monster.die()
-            Player.gain(monlv, xp_gain, gold_gain)
+            gain(intro_monster)
             print("You have completed the tutorial!")
-            Player.ready = True
             break
         else:
             print("You have failed the tutorial. Please restart the game to try again.")
             break
 
+def gain(monster):
+    monlv, xp_gain, gold_gain = monster.die()
+    User.gain(monlv, xp_gain, gold_gain)
+
 while True:
     try:
         with open("data.json", "r") as f:
             load_save()
-            if Player.ready == False:
+            if User.ready == False:
                 start_tutorial()
+                User.ready = True
+                break
             else:
                 print("Save loaded successfully!")
                 break
@@ -278,18 +285,20 @@ while True:
     except FileNotFoundError:
         new_player()
         break
-while Player.ready == True:
+
+while User.ready == True:
+    save()
     action = input("What do you want to do? 1. Adventure 2. Apply points 3. Shop 4. View stats: ")
-    if action == 1:
+    if action == "1":
         pass
-    elif action == 2:
-        if Player.upg_pts == 0:
+    elif action == "2":
+        if User.upg_pts == 0:
             print("You don't have any upgrade points.")
         else:
             apply_points()
-    elif action == 3:
+    elif action == "3":
         apply_points()
-    elif action == 4:
+    elif action == "4":
         print("Your stats(enter e to exit):")
         time.sleep(1)
         show_stats()

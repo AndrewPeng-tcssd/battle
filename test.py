@@ -1,7 +1,10 @@
-class x:
-    def __init__(self, a, b):
-        self.a = a
-        self.b = b
-j = [1, 2]
-asdf = x(j)
-print(asdf)
+class idk:
+    def __init__(self, val):
+        self.value = val
+
+yes = idk(1)
+
+def asdf(asd):
+    print(asd.value)
+
+asdf("yes")
