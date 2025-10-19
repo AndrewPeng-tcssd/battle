@@ -120,7 +120,7 @@ def choose_attribute_add(num):
     else:
         return False
 
-def choose_class(num):
+def choose_class(name, num):
     global Player
     if num == "1":
         Player = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, 0, 6, False)
@@ -155,121 +155,146 @@ def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, mons
             return False
         time.sleep(1)
 
+def apply_points():
+    while Player.upg_pts > 0:
+        type_chosen = None
+        choose_attr = input("Enter the corresponding number: 1. HP 2. ATK 3. DEF 4. SPD 5. Gold ")
+        while True:
+            type_chosen = choose_attribute_add(choose_attr)
+            if type_chosen:
+                break
+            else:
+                print("Invalid choice.")
+        print(f"You have chosen {type_chosen}!")
+        while True:
+            how_much = input(f"Choose the amount of points you want to apply(If you change your mind, enter 0): ")
+            if int(how_much) <= Player.upg_pts:
+                Player.apply_pts(int(how_much), type_chosen)
+                break
+            else:
+                print("You don't have this much.")
+
+def show_stats():
+    print(f"Level: {Player.lv}")
+    print(f"XP: {Player.xp}/{Player.lv+1}")
+    print(f"HP: {Player.hp}")
+    print(f"ATK: {Player.atk}")
+    print(f"DEF: {Player.df}")
+    print(f"SPD: {Player.spd}")
+    print(f"Gold: {Player.gold}")
+    print(f"Upgrade Points: {Player.upg_pts}")
+
+def new_player():
+    print("Save does not exist.")
+    print("New user detected. Welcome to Battle World!")
+    print("Battle World is a text-based RPG where you can fight monsters, level up, and become stronger!")
+    name = input("Please enter your name: ")
+    while True:
+        print("Welcome to Battle World! Please choose your class(enter the corresponding number).")
+        class_num = input("1. Berserker High Speed and Damage. 2. Mage High Speed and Defense 3. Healer Heals or Poisons and high defense ")
+        class_type = choose_class(name, class_num)
+        if class_type:
+            print(f"You chose {class_type}!")
+            break
+        else:
+            print("Not a valid selection")
+    print("You have 6 upgrade points. You can apply them on things like HP, ATK, DEF, SPD, or your gold. Each point increases each stat by 1, but gold increases by 2. Choose wisely.")
+    print("Which attribute do you want to put points on? Remember, you can put points on many different things.")
+    apply_points()
+    print("Done! You have finished setting up. Welcome to Battle World! Please restart the game to load your save.")    
+    data = {
+        "name": Player.name,
+        "class_type": Player.class_type,
+        "lv": Player.lv,
+        "xp": Player.xp,
+        "hp": Player.hp,
+        "atk": Player.atk,
+        "df": Player.df,
+        "spd": Player.spd,
+        "gold": Player.gold,
+        "upg_pts": Player.upg_pts,
+        "ready": Player.ready
+    }
+    with open("data.json", "w") as f:
+        json.dump(data, f)
+
+def load_save():
+    data = json.load(f)
+    name = data["name"]
+    class_type = data["class_type"]
+    lv = data["lv"]
+    xp = data["xp"]
+    hp = data["hp"]
+    atk = data["atk"]
+    df = data["df"]
+    spd = data["spd"]
+    gold = data["gold"]
+    upg_pts = data["upg_pts"]
+    ready = data["ready"]
+    Player = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready)
+
+def start_tutorial():
+    print("Welcome to Battle World!")
+    time.sleep(1)
+    print("Lets start with the basics.")
+    time.sleep(1)
+    print("You can fight monsters to gain experience and gold. Level up to become stronger!")
+    time.sleep(1)
+    print(f"Your current stats are:")
+    time.sleep(1)
+    show_stats()
+    time.sleep(5)
+    print("These are all the stats. If you're wondering, speed indicates how fast you can flee from a monster.")
+    print("Now, lets get a monster to fight.")
+    time.sleep(1)
+    intro_monster = Monster(list(monsters.keys())[0], monsters["Goblin"]["lvl"], monsters["Goblin"]["xpdf"], monsters["Goblin"]["hp"], monsters["Goblin"]["atk"], monsters["Goblin"]["df"], monsters["Goblin"]["spd"], monsters["Goblin"]["g"])
+    while True:
+        print(f"A wild {intro_monster.name} has appeared!")
+        time.sleep(0.5)
+        print("Prepare for battle!")
+        time.sleep(0.5)
+        battle(Player.hp, Player.atk, Player.df, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.name)
+        if win:
+            monlv, xp_gain, gold_gain = intro_monster.die()
+            Player.gain(monlv, xp_gain, gold_gain)
+            print("You have completed the tutorial!")
+            Player.ready = True
+            break
+        else:
+            print("You have failed the tutorial. Please restart the game to try again.")
+            break
+
 while True:
     try:
         with open("data.json", "r") as f:
-            data = json.load(f)
-            name = data["name"]
-            class_type = data["class_type"]
-            lv = data["lv"]
-            xp = data["xp"]
-            hp = data["hp"]
-            atk = data["atk"]
-            df = data["df"]
-            spd = data["spd"]
-            gold = data["gold"]
-            upg_pts = data["upg_pts"]
-            ready = data["ready"]
-            Player = Player(name, class_type, lv, xp, hp, atk, df, spd, gold, upg_pts, ready)
+            load_save()
             if Player.ready == False:
-                print("Welcome to Battle World!")
-                time.sleep(0.5)
-                print("Lets start with the basics.")
-                time.sleep(0.5)
-                print("You can fight monsters to gain experience and gold. Level up to become stronger!")
-                time.sleep(0.5)
-                print(f"Your current stats are:")
-                time.sleep(0.5)
-                print(f"Level: {Player.lv}")
-                time.sleep(0.5)
-                print(f"XP: {Player.xp}/{Player.lv+1}")
-                time.sleep(0.5)
-                print(f"HP: {Player.hp}")
-                time.sleep(0.5)
-                print(f"ATK: {Player.atk}")
-                time.sleep(0.5)
-                print(f"DEF: {Player.df}")
-                time.sleep(0.5)
-                print(f"SPD: {Player.spd}")
-                time.sleep(0.5)
-                print(f"Gold: {Player.gold}")
-                time.sleep(0.5)
-                print(f"Upgrade Points: {Player.upg_pts}")
-                time.sleep(0.5)
-                print("These are all the stats. If you're wondering, speed indicates how fast you can flee from a monster.")
-                print("Now, lets get a monster to fight.")
-                time.sleep(0.5)
-                intro_monster = Monster(list(monsters.keys())[0], monsters["Goblin"]["lvl"], monsters["Goblin"]["xpdf"], monsters["Goblin"]["hp"], monsters["Goblin"]["atk"], monsters["Goblin"]["df"], monsters["Goblin"]["spd"], monsters["Goblin"]["g"])
-                while True:
-                    print(f"A wild {intro_monster.name} has appeared!")
-                    time.sleep(0.5)
-                    print("Prepare for battle!")
-                    time.sleep(0.5)
-                    battle(Player.hp, Player.atk, Player.df, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.name)
-                    if win:
-                        monlv, xp_gain, gold_gain = intro_monster.die()
-                        Player.gain(monlv, xp_gain, gold_gain)
-                        print("You have completed the tutorial!")
-                        Player.ready = True
-                        break
-                    
-                    else:
-                        print("You have failed the tutorial. Please restart the game to try again.")
-                break
+                start_tutorial()
             else:
                 print("Save loaded successfully!")
                 break
                 
     except FileNotFoundError:
-        print("Save does not exist.")
-        print("New user detected. Welcome to Battle World!")
-        print("Battle World is a text-based RPG where you can fight monsters, level up, and become stronger!")
-        name = input("Please enter your name: ")
+        new_player()
+        break
+while Player.ready == True:
+    action = input("What do you want to do? 1. Adventure 2. Apply points 3. Shop 4. View stats: ")
+    if action == 1:
+        pass
+    elif action == 2:
+        if Player.upg_pts == 0:
+            print("You don't have any upgrade points.")
+        else:
+            apply_points()
+    elif action == 3:
+        apply_points()
+    elif action == 4:
+        print("Your stats(enter e to exit):")
+        time.sleep(1)
+        show_stats()
         while True:
-            print("Welcome to Battle World! Please choose your class(enter the corresponding number).")
-            class_num = input("1. Berserker High Speed and Damage. 2. Mage High Speed and Defense 3. Healer Heals or Poisons and high defense ")
-            class_type = choose_class(class_num)
-            if class_type:
-                print(f"You chose {class_type}!")
+            choice = input(" ")
+            if choice == "e":
                 break
             else:
-                print("Not a valid selection")
-        print("You have 6 upgrade points. You can apply them on things like HP, ATK, DEF, SPD, or your gold. Each point increases each stat by 1, but gold increases by 2. Choose wisely.")
-        print("Which attribute do you want to put points on? Remember, you can put points on many different things.")
-        while Player.upg_pts > 0:
-            type_chosen = None
-            choose_attr = input("Enter the corresponding number: 1. HP 2. ATK 3. DEF 4. SPD 5. Gold ")
-            while True:
-                type_chosen = choose_attribute_add(choose_attr)
-                if type_chosen:
-                    break
-                else:
-                    print("Invalid choice.")
-            print(f"You have chosen {type_chosen}!")
-            while True:
-                how_much = input(f"Choose the amount of points you want to apply(If you change your mind, enter 0): ")
-                if int(how_much) <= Player.upg_pts:
-                    Player.apply_pts(int(how_much), type_chosen)
-                    break
-                else:
-                    print("You don't have this much.")
-        print("Done! You have finished setting up. Welcome to Battle World! Please restart the game to load your save.")    
-        data = {
-            "name": Player.name,
-            "class_type": Player.class_type,
-            "lv": Player.lv,
-            "xp": Player.xp,
-            "hp": Player.hp,
-            "atk": Player.atk,
-            "df": Player.df,
-            "spd": Player.spd,
-            "gold": Player.gold,
-            "upg_pts": Player.upg_pts,
-            "ready": Player.ready
-        }
-        with open("data.json", "w") as f:
-            json.dump(data, f)
-            break
-
-while Player.ready == True:
-    action = input("What do you want to do? 1. Adventure 2. Apply points 3. Shop ")
+                pass
