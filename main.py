@@ -219,6 +219,7 @@ def new_player():
         json.dump(data, f)
 
 def load_save():
+    global Player
     data = json.load(f)
     name = data["name"]
     class_type = data["class_type"]
