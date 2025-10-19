@@ -7,9 +7,9 @@ monsters = {
     "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "xpdf": 5, "g": 5},
     "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "xpdf": 10, "g": 5},
     "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 5, "df": 20, "spd": 40, "xpdf": 10, "g": 10},
-    "Wolf": {"lvh": 30, "lvl": 5,"hp": 60, "atk": 30, "df": 10, "spd": 30, "xpdf": 15, "g": 15},
-    "Bandit": {"lvh": 35, "lvl": 10,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 20, "g": 25},
-    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 45, "atk": 10, "df": 30, "spd": 45, "xpdf": 15, "g": 15},
+    "Wolf": {"lvh": 30, "lvl": 5,"hp": 60, "atk": 30, "df": 10, "spd": 30, "xpdf": 10, "g": 15},
+    "Bandit": {"lvh": 35, "lvl": 10,"hp": 30, "atk": 25, "df": 10, "spd": 40, "xpdf": 15, "g": 25},
+    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 45, "atk": 10, "df": 30, "spd": 45, "xpdf": 20, "g": 15},
 }
 
 lvtemp = None
@@ -24,11 +24,12 @@ class Player:
         self.name = name
         self.class_type = class_type
         self.lv = lv
+        self.mult = 1+lv/100
         self.xp = xp
-        self.hp = hp
-        self.atk = atk
-        self.df = df
-        self.spd = spd
+        self.hp = round(hp * self.mult)
+        self.atk = round(atk * self.mult)
+        self.df = round(df * self.mult)
+        self.spd = round(spd * self.mult)
         self.gold = gold
         self.upg_pts = upg_pts
         self.ready = ready
@@ -53,6 +54,11 @@ class Player:
             self.df += 3+math.floor(self.lv/20)
             self.spd += 2+math.floor(self.lv/20)
             self.upg_pts += 1+math.floor(self.lv/10)
+        mult = 1 + self.lv / 100
+        self.hp  = round(self.hp  * mult)
+        self.atk = round(self.atk * mult)
+        self.df  = round(self.df  * mult)
+        self.spd = round(self.spd * mult)
         print(f"{self.name} leveled up to {self.lv}!")
     
     def apply_pts(self, amount, attribute):
@@ -156,7 +162,8 @@ def battle(playerhp, playeratk, playerdf, monsterhp, monsteratk, monsterdf, mons
         time.sleep(1)
 
 def apply_points():
-    while User.upg_pts > 0:
+    if User.upg_pts > 0:
+        show_stats()
         type_chosen = None
         choose_attr = input("Enter the corresponding number: 1. HP 2. ATK 3. DEF 4. SPD 5. Gold ")
         while True:
@@ -173,6 +180,8 @@ def apply_points():
                 break
             else:
                 print("You don't have this much.")
+    else:
+        print("You don't have any points.")
 
 def show_stats():
     print(f"Level: {User.lv}")
@@ -200,7 +209,8 @@ def new_player():
             print("Not a valid selection")
     print("You have 6 upgrade points. You can apply them on things like HP, ATK, DEF, SPD, or your gold. Each point increases each stat by 1, but gold increases by 2. Choose wisely.")
     print("Which attribute do you want to put points on? Remember, you can put points on many different things.")
-    apply_points()
+    while User.upg_pts > 0:
+        apply_points()
     print("Done! You have finished setting up. Welcome to Battle World! Please restart the game to load your save.")    
     save()
 
@@ -295,9 +305,16 @@ while User.ready == True:
         if User.upg_pts == 0:
             print("You don't have any upgrade points.")
         else:
+            print("Apply Points(enter e to exit)")
             apply_points()
+            while True:
+                choice = input(" ")
+                if choice == "e":
+                    break
+                else:
+                    pass
     elif action == "3":
-        apply_points()
+        pass
     elif action == "4":
         print("Your stats(enter e to exit):")
         time.sleep(1)
