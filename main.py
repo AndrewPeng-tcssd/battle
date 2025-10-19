@@ -24,12 +24,11 @@ class Player:
         self.name = name
         self.class_type = class_type
         self.lv = lv
-        self.mult = 1+lv/100
         self.xp = xp
-        self.hp = round(hp * self.mult)
-        self.atk = round(atk * self.mult)
-        self.df = round(df * self.mult)
-        self.spd = round(spd * self.mult)
+        self.hp = hp
+        self.atk = atk
+        self.df = df
+        self.spd = spd
         self.gold = gold
         self.upg_pts = upg_pts
         self.ready = ready
