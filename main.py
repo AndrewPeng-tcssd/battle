@@ -108,9 +108,6 @@ class Monster:
     def die(self):
         return self.lv, self.xp, self.gold
     
-    def battle(self):
-        return self.lv, self. hp, self.atk, self.df, self.spd
-    
 def choose_attribute_add(num):
     if num == "1":
         return "hp"
