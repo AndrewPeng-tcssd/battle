@@ -1,10 +1,7 @@
-class idk:
-    def __init__(self, dictionary):
-        self.dict = dictionary
-    def gain(self, abi):
-        self.dict.update(abi)
+hello = {"hi": 1, "hello": 2}
+bob = {"hi": 3, "hello": 4}
 
-yes = {"1": {"hi": 5}}
-hello = idk({"5":{"bye": 2}})
-hello.gain(yes)
-print(f"he {hello.dict.keys()}")
+def check(d1, d2):
+    if list(d2.keys())[0] not in d1.keys():
+        print("yay")
+check(hello, bob)

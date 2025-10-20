@@ -101,7 +101,7 @@ class Player:
             goldtemp = 0
         chance = abichance
         rand = random.randint(1, 100)
-        if rand <= chance:
+        if rand <= chance and list(abi.keys())[0] not in self.abilities.keys():
             self.abilities.update(abi)
             print(f"You got {list(abi.keys())[0]}!")
 
