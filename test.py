@@ -7,4 +7,4 @@ class idk:
 yes = {"1": {"hi": 5}}
 hello = idk({"5":{"bye": 2}})
 hello.gain(yes)
-print(f"he {list(hello.dict.keys())[0]}")
+print(f"he {hello.dict.keys()}")
