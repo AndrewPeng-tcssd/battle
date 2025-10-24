@@ -53,10 +53,10 @@ class Player:
             self.df += 2+math.floor(self.lv/20)
             self.spd += 4+math.floor(self.lv/20)
             self.upg_pts += 1+math.floor(self.lv/10)
-        elif self.class_type == "Healer":
-            self.hp += 4+math.floor(self.lv/5)
-            self.atk += 3+math.floor(self.lv/10)
-            self.df += 3+math.floor(self.lv/20)
+        elif self.class_type == "Tank":
+            self.hp += 4+math.floor(self.lv/3)
+            self.atk += 3+math.floor(self.lv/15)
+            self.df += 3+math.floor(self.lv/10)
             self.spd += 2+math.floor(self.lv/20)
             self.upg_pts += 1+math.floor(self.lv/10)
         mult = 1 + self.lv / 100
@@ -140,12 +140,12 @@ def choose_class(name, num):
     if num == "1":
         User = Player(name, "Berserker", 1, 0, 20, 20, 5, 10, {}, 0, 6, False)
         return "Berserker"
-    elif num == 2:
-        User = Player(name, "Mage", 1, 0, 20, 10, 10, 10, {}, 0, 6, False)
+    elif num == "2":
+        User = Player(name, "Mage", 1, 0, 20, 15, 10, 10, {}, 0, 6, False)
         return "Mage"
-    elif num == 3:
-        User = Player(name, "Healer", 1, 0, 30, 15, 10, 10, {}, 0, 6, False)
-        return "Healer"
+    elif num == "3":
+        User = Player(name, "Tank", 1, 0, 35, 10, 15, 5, {}, 0, 6, False)
+        return "Tank"
     else:
         return False
 
@@ -251,7 +251,7 @@ def new_player():
     name = input("Please enter your name: ")
     while True:
         print("Welcome to Battle World! Please choose your class(enter the corresponding number).")
-        class_num = input("1. Berserker High Speed and Damage. 2. Mage High Speed and Defense 3. Healer Heals or Poisons and high defense ")
+        class_num = input("1. Berserker: High Speed and Damage. 2. Mage: High Speed and Defense 3. Tank: High HP and Defense: ")
         class_type = choose_class(name, class_num)
         if class_type:
             print(f"You chose {class_type}!")
