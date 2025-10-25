@@ -225,12 +225,15 @@ def apply_points():
                 print("Invalid choice.")
         print(f"You have chosen {type_chosen}!")
         while True:
-            how_much = input(f"Choose the amount of points you want to apply(If you change your mind, enter 0): ")
-            if int(how_much) <= User.upg_pts:
-                User.apply_pts(int(how_much), type_chosen)
-                break
-            else:
-                print("You don't have this much.")
+            try:
+                how_much = input(f"Choose the amount of points you want to apply(If you change your mind, enter 0): ")
+                if int(how_much) <= User.upg_pts:
+                    User.apply_pts(int(how_much), type_chosen)
+                    break
+                else:
+                    print("You don't have this much.")
+            except ValueError:
+                print("Not a valid number.")
     else:
         print("You don't have any points.")
 
