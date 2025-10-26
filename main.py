@@ -5,13 +5,13 @@ import time
 import os
 
 monsters = {
-    "Goblin": {"lvh": 20, "lvl": 1,"hp": 20, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 10, "type": "attack"}}, "abidropchance": 100, "xpdf": 5, "g": 5},
+    "Goblin": {"lvh": 20, "lvl": 1,"hp": 15, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 10, "type": "attack"}}, "abidropchance": 100, "xpdf": 5, "g": 5},
     "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "abilities": {"Ambush": {"power": 5, "type": "scare"}}, "abidropchance": 25, "xpdf": 10, "g": 5},
-    "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 5, "df": 20, "spd": 40, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 10, "g": 10},
-    "Wolf": {"lvh": 30, "lvl": 5,"hp": 60, "atk": 30, "df": 10, "spd": 30, "abilities": {"Slice": {"power": 15, "type": "attack"}}, "abidropchance": 10, "xpdf": 10, "g": 15},
-    "Bandit": {"lvh": 35, "lvl": 10,"hp": 30, "atk": 25, "df": 10, "spd": 40, "abilities": {"Ambush": {"power": 15, "type": "scare"}}, "abidropchance": 3, "xpdf": 15, "g": 25},
-    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 45, "atk": 10, "df": 30, "spd": 45, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 20, "g": 15},
-    "Mafia Boss": {"lvh": 50, "lvl": 20,"hp": 60, "atk": 40, "df": 20, "spd": 25, "abilities": {"Punch": {"power": 10, "type": "attack"}}, "abidropchance": 15, "xpdf": 30, "g": 50},
+    "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 30, "df": 20, "spd": 40, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 10, "g": 10},
+    "Wolf": {"lvh": 30, "lvl": 5,"hp": 50, "atk": 50, "df": 20, "spd": 45, "abilities": {"Slice": {"power": 15, "type": "attack"}}, "abidropchance": 10, "xpdf": 10, "g": 15},
+    "Bandit": {"lvh": 35, "lvl": 10,"hp": 80, "atk": 80, "df": 30, "spd": 75, "abilities": {"Ambush": {"power": 15, "type": "scare"}}, "abidropchance": 3, "xpdf": 15, "g": 25},
+    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 220, "atk": 150, "df": 120, "spd": 130, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 20, "g": 15},
+    "Mafia Boss": {"lvh": 50, "lvl": 20,"hp": 270, "atk": 220, "df": 160, "spd": 85, "abilities": {"Punch": {"power": 10, "type": "attack"}}, "abidropchance": 15, "xpdf": 30, "g": 50},
 }
 
 savepath = "data.json"
@@ -42,24 +42,24 @@ class Player:
     def level_up(self):
         self.lv += 1
         if self.class_type == "Berserker":
-            self.hp += 3+math.floor(self.lv/5)
-            self.atk += 4+math.floor(self.lv/10)
-            self.df += 1+math.floor(self.lv/20)
-            self.spd += 2+math.floor(self.lv/20)
-            self.upg_pts += 1+math.floor(self.lv/10)
+            self.hp += 3+math.floor(self.lv/20)
+            self.atk += 4+math.floor(self.lv/25)
+            self.df += 1+math.floor(self.lv/30)
+            self.spd += 2+math.floor(self.lv/30)
+            self.upg_pts += 1+math.floor(self.lv/20)
         elif self.class_type == "Mage":
-            self.hp += 3+math.floor(self.lv/5)
-            self.atk += 2+math.floor(self.lv/10)
-            self.df += 2+math.floor(self.lv/20)
-            self.spd += 4+math.floor(self.lv/20)
-            self.upg_pts += 1+math.floor(self.lv/10)
+            self.hp += 3+math.floor(self.lv/20)
+            self.atk += 2+math.floor(self.lv/30)
+            self.df += 2+math.floor(self.lv/30)
+            self.spd += 4+math.floor(self.lv/35)
+            self.upg_pts += 1+math.floor(self.lv/20)
         elif self.class_type == "Tank":
-            self.hp += 4+math.floor(self.lv/3)
-            self.atk += 3+math.floor(self.lv/15)
-            self.df += 3+math.floor(self.lv/10)
-            self.spd += 2+math.floor(self.lv/20)
-            self.upg_pts += 1+math.floor(self.lv/10)
-        mult = 1 + self.lv / 100
+            self.hp += 4+math.floor(self.lv/15)
+            self.atk += 3+math.floor(self.lv/35)
+            self.df += 3+math.floor(self.lv/25)
+            self.spd += 2+math.floor(self.lv/30)
+            self.upg_pts += 1+math.floor(self.lv/20)
+        mult = 1 + self.lv / 1750
         self.hp  = round(self.hp  * mult)
         self.atk = round(self.atk * mult)
         self.df  = round(self.df  * mult)
@@ -86,7 +86,8 @@ class Player:
             self.xp += xp
             self.gold += gold
         else:
-            self.xp += round(xp*(1/(self.lv/(self.lv/abs(self.lv-(monlv+1))))))
+            #self.xp += round(xp*(1/(self.lv/(self.lv/abs(self.lv-(monlv+1))))))
+            self.xp += 1000
             self.gold += round(gold*(1/(self.lv/(self.lv/abs(self.lv-(monlv+1))))))
             print(self.xp)
             print(self.gold)
@@ -314,7 +315,7 @@ def start_tutorial():
     print(f"Your current stats are:")
     time.sleep(1)
     show_stats()
-    time.sleep(5)
+    time.sleep(3)
     print("These are all the stats. If you're wondering, speed indicates how fast you can flee from a monster.")
     print("Now, lets get a monster to fight.")
     time.sleep(1)
