@@ -3,17 +3,32 @@ import math
 import json
 import time
 import os
+import pygame
 
+pygame.mixer.init()
+pygame.mixer.music.load("MEGALOVANIA.mp3")
+pygame.mixer.music.play(loops=10000)
 
 monsters = {
-    "Goblin": {"lvh": 20, "lvl": 1,"hp": 15, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 100, "type": "attack"}}, "abidropchance": 100, "xpdf": 5, "g": 5},
-    "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "abilities": {"Ambush": {"power": 50, "type": "scare"}}, "abidropchance": 25, "xpdf": 10, "g": 5}, # 5
-    "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 30, "df": 20, "spd": 40, "abilities": {"Scare": {"power": 100, "type": "scare"}}, "abidropchance": 5, "xpdf": 10, "g": 10},
-    "Wolf": {"lvh": 30, "lvl": 5,"hp": 50, "atk": 50, "df": 20, "spd": 45, "abilities": {"Slice": {"power": 150, "type": "attack"}}, "abidropchance": 10, "xpdf": 10, "g": 15}, # 15
-    "Bandit": {"lvh": 35, "lvl": 10,"hp": 80, "atk": 80, "df": 30, "spd": 75, "abilities": {"Ambush": {"power": 150, "type": "scare"}}, "abidropchance": 3, "xpdf": 15, "g": 25},# 15
-    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 220, "atk": 150, "df": 120, "spd": 130, "abilities": {"Scare": {"power": 10, "type": "scare"}}, "abidropchance": 5, "xpdf": 20, "g": 15},
-    "Mafia Boss": {"lvh": 50, "lvl": 20,"hp": 270, "atk": 220, "df": 160, "spd": 85, "abilities": {"Punch": {"power": 10, "type": "attack"}}, "abidropchance": 15, "xpdf": 30, "g": 50} 
+    "Goblin": {"lvh": 20, "lvl": 1,"hp": 15, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 10, "type": "attack", "cd": 1}}, "abidropchance": 100, "xpdf": 5, "g": 5},
+    "Bush Ambusher": {"lvh": 25, "lvl": 2,"hp": 20, "atk": 25, "df": 5, "spd": 40, "abilities": {"Ambush": {"power": 5, "type": "scare", "cd": 2}}, "abidropchance": 25, "xpdf": 10, "g": 5},
+    "Spirit": {"lvh": 25, "lvl": 3,"hp": 40, "atk": 30, "df": 20, "spd": 40, "abilities": {"Scare": {"power": 10, "type": "scare", "cd": 2}}, "abidropchance": 5, "xpdf": 10, "g": 10},
+    "Wolf": {"lvh": 30, "lvl": 5,"hp": 50, "atk": 50, "df": 20, "spd": 45, "abilities": {"Slice": {"power": 15, "type": "attack", "cd": 2}}, "abidropchance": 10, "xpdf": 10, "g": 15},
+    "Bandit": {"lvh": 35, "lvl": 10,"hp": 80, "atk": 80, "df": 30, "spd": 75, "abilities": {"Ambush": {"power": 15, "type": "scare", "cd": 3}}, "abidropchance": 3, "xpdf": 15, "g": 25},
+    "Forest Spirit": {"lvh": 40, "lvl": 10,"hp": 220, "atk": 150, "df": 120, "spd": 130, "abilities": {"Scare": {"power": 25, "type": "scare", "cd": 4}}, "abidropchance": 5, "xpdf": 20, "g": 15},
+    "Mafia Boss": {"lvh": 50, "lvl": 20,"hp": 270, "atk": 220, "df": 160, "spd": 85, "abilities": {"Punch": {"power": 30, "type": "attack", "cd": 5}}, "abidropchance": 15, "xpdf": 30, "g": 50} 
 } 
+
+shopitems = {
+    "Stone Sword": {"attack": 5, "critchance": 5, "critdmg": 100, "abilities": {}},
+    "Iron Sword": {"attack": 15, "critchance": 10, "critdmg": 100, "abilities": {}},
+    "Super Sword": {"attack": 25, "critchance": 20, "critdmg": 100, "abilities": {}},
+    "Mega Sword": {"attack": 30, "critchance": 30, "critdmg": 150, "abilities": {"Mega Strike": {"power": 50, "subpower": 0, "type": "sword", "subtype": "dmginc"}}},
+    "Hypersword": {"attack": 50, "critchance": 50, "critdmg": 200, "abilities": {"Witherborn": {"power": 100, "subpower": 2, "type": "sword", "subtype": "paralyze"}}},
+    "Hyperion": {"attack": 100, "critchance": 100, "critdmg": 300, "abilities": {"Terminate": {"power": 150, "subpower": 0, "type": "sword", "subtype": "dmginc"}}}
+}
+
+songs = ["MEGALOVANIA", "THE WORLD REVOLVING"]
 
 savepath = "data.json"
 lvtemp = None
@@ -155,12 +170,23 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
     monster_temp_hp = monsterhp
     playerstunsuccess = False
     monsterstunsuccess = False
-    playertimesstunned = 0
-    monstertimesstunned = 0
+    playerallincd = False
+    monallincd = False
     print(appearing_dialogues[dialogue_rand-1])
     time.sleep(0.5)
     print("Prepare for battle!")
     time.sleep(0.5)
+    playerabicd = {}
+    playerabicdtemp = {}
+    playerabilist = list(playerabi)
+    for i in range(len(playerabi)):
+        playerabicd[playerabilist[i]] = playerabi[playerabilist[i]]["cd"]
+        playerabicdtemp[playerabilist[i]] = 0
+    monabicd = {}
+    monabicdtemp = {}
+    monabilist = list(monsterabi)
+    monabicd[monabilist[i]] = monsterabi[monabilist[i]]["cd"]
+    monabicdtemp[monabilist[i]] = 0
     while True:
         playertimesstunned = 0
         monstertimesstunned = 0
@@ -170,28 +196,49 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
         monsterstunsuccess = False
         if playerabi == None:
             pass
-        else:
-            abi = input(f"Which ability do you want to use? {list(playerabi.keys())} ")
-            if abi in playerabi.keys():
-                if playerabi[abi]["type"] == "attack":
-                    playeratk = round(playeratk * (1+(playerabi[abi]["power"]/100)))
-                elif playerabi[abi]["type"] == "scare":
-                    playeratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/150)))
-                    stunchance = monsterabi[monabinum]["power"]
-                    damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
-                    monster_temp_hp -= damage_to_monster
-                    while monster_temp_hp > 0:
-                        pRand = random.randint(1, 100)
-                        if pRand <= stunchance:
+        elif not playerallincd:
+            while True:
+                abi = input(f"Which ability do you want to use? {list(playerabicdtemp)} ")
+                if abi in playerabi.keys():
+                    if playerabicdtemp[playerabilist[abi]] == 0:
+                        if playerabi[abi]["type"] == "attack":
+                            playeratk = round(playeratk * (1+(playerabi[abi]["power"]/100)))
+                            break
+                        elif playerabi[abi]["type"] == "scare":
+                            playeratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/150)))
+                            stunchance = monsterabi[monabinum]["power"]
                             damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
                             monster_temp_hp -= damage_to_monster
-                            playerstunsuccess = True
-                            playertimesstunned += 1
-                        else:
-                            playerturn = False
-                            monsterturn = True
-                            playerstunsuccess = False
+                            while monster_temp_hp > 0:
+                                pRand = random.randint(1, 100)
+                                if pRand <= stunchance:
+                                    damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
+                                    monster_temp_hp -= damage_to_monster
+                                    playerstunsuccess = True
+                                    playertimesstunned += 1
+                                else:
+                                    playerturn = False
+                                    monsterturn = True
+                                    playerstunsuccess = False
+                                    break
                             break
+                    else:
+                        print("Please choose another ability, this one is on cooldown.")
+                else:
+                    print("Please select a valid option.")
+            for i in range(len(playerabi)):
+                if playerabicdtemp[playerabilist[i]] != 0:
+                    playerabicdtemp[playerabilist[i]] -= 1
+                else: 
+                    pass
+            playerabicdtemp[playerabilist[abi]] = playerabi[playerabilist[abi]]["cd"]
+            for i in range(len(playerabi)):
+                if playerabicdtemp[playerabilist[i]] == 0:
+                    playerallincd = False
+                else:
+                    playerallincd = True
+        else:
+            print("All your abilities are on cooldown.")
         if not monsterturn:
             damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
             monster_temp_hp -= damage_to_monster
@@ -209,38 +256,46 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
             print("You defeated the monster!")
             win = True
             return True
-        monabi = (random.randint(1, len(list(monsterabi.keys())))-1)
-        monlist = list(monsterabi.keys())
-        monabinum = monlist[monabi]
-        if monsterabi[monabinum]["type"] == "attack":
-            monsteratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/100)))
-        elif monsterabi[monabinum]["type"] == "scare":
-            monsteratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/150)))
-            stunchance = monsterabi[monabinum]["power"]
-            damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
-            player_temp_hp -= damage_to_player
-            while player_temp_hp > 0:
-                mRand = random.randint(1, 100)
-                if mRand <= stunchance:
-                    damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
-                    player_temp_hp -= damage_to_player
-                    monsterstunsuccess = True
-                    monstertimesstunned += 1
-                else:
-                    monsterturn = False
-                    playerturn = True
-                    monsterstunsuccess = False
-                    break
+        if not monallincd:
+            monlist = list(monsterabi.keys())
+            monabinum = monlist[0]
+            if monsterabi[monabinum]["type"] == "attack":
+                monsterdmg = round(monsteratk * (1+(monsterabi[monabinum]["power"]/100)))
+            elif monsterabi[monabinum]["type"] == "scare":
+                monsterdmg = round(monsteratk * (1+(monsterabi[monabinum]["power"]/150)))
+                stunchance = monsterabi[monabinum]["power"]
+                damage_to_player = max(1, monsterdmg - random.randint(1, playerdf))
+                player_temp_hp -= damage_to_player
+                while player_temp_hp > 0:
+                    mRand = random.randint(1, 100)
+                    if mRand <= stunchance:
+                        damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+                        player_temp_hp -= damage_to_player
+                        monsterstunsuccess = True
+                        monstertimesstunned += 1
+                    else:
+                        monsterturn = False
+                        playerturn = True
+                        monsterstunsuccess = False
+                        break
+            monabicdtemp[monabilist[abi]] = monsterabi[monabilist[abi]]["cd"]
+            monallincd = True
 
-        if not playerturn:
+        else:
             damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
             player_temp_hp -= damage_to_player
+        if monabicdtemp[monabilist[0]] != 0:
+            monabicdtemp[monabilist[0]] -= 1
+        if monabicdtemp[monabilist[0]] == 0:
+            monallincd = False
         if monsterabi[monabinum]["type"] != "scare": # ablity other than scare
             print(f"{monstername} used {monabinum} and dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         elif monsterstunsuccess: # if stunned successfully
             print(f"{monstername} used {monabinum} and stunned you {monsterstunsuccess} time(s). It dealt {damage_to_player} damage to you {monsterstunsuccess + 1} times. Your HP is now {max(0, player_temp_hp)}.")
         elif not monsterstunsuccess: # used scare ability but failed to stun
             print(f"{monstername} tried using {monabinum} to scare you but failed. It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+        elif monallincd:
+            print(f"{monstername} tried using their ability but it was on cooldown ({(monabicdtemp[monabilist[0]])+1} turns left). It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         else: # this should never happen
             print("BUG DETECTED (MONSTER)")
         if player_temp_hp <= 0:
@@ -363,8 +418,8 @@ def start_tutorial():
             print("You have completed the tutorial!")
             break
         else:
-            print("You have failed the tutorial. Please restart the game to try again.")
-            break
+            print("You have failed the tutorial. Please try again.")
+
 
 def gain(monster):
     monlv, xp_gain, gold_gain, abi, abichance = monster.die()
@@ -423,3 +478,5 @@ while User.ready == True:
                 break
             else:
                 pass
+    elif action == "5":
+        song = input("")
