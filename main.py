@@ -122,6 +122,11 @@ class Player:
             self.abilities.update(abi)
             print(f"You got {list(abi.keys())[0]}!")
             input("Press enter to continue... ")
+    def lose(self):
+        gtemp = self.gold
+        goldlostrand = random.randint(20, 50)
+        self.gold = round(self.gold*(1-(goldlostrand/100)))
+        input(f"You were defeated and lost {gtemp-self.gold} gold! Next time, maybe flee if you see a mighty opponent. ")
 
 class Monster:
     def __init__(self, monster, lv, xp, hp, atk, df, spd, abilities, abichance, g):
@@ -167,7 +172,7 @@ def choose_class(name, num):
     else:
         return False
 
-def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, monsterdf, monsterabi, monstername, monsterlevel):
+def battle(playerhp, playeratk, playerdf, playerabi, playerspd, monsterhp, monsteratk, monsterdf, monsterabi, monstername, monsterlevel, monsterspd):
     global player_temp_hp, monster_temp_hp, win, playerturn, monsterturn, playerstunsuccess, monsterstunsuccess, playertimesstunned, monstertimesstunned
     appearing_dialogues = [f"A wild level {monsterlevel} {monstername} has appeared!", f"Beware... a level {monsterlevel} {monstername} has appeared!", f"You stumble across a level {monsterlevel} {monstername}!"]
     dialogue_rand = random.randint(1, len(appearing_dialogues))
@@ -179,137 +184,165 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
     monallincd = False
     print(appearing_dialogues[dialogue_rand-1])
     time.sleep(0.5)
-    print("Prepare for battle!")
-    time.sleep(0.5)
-    if playerabi != None:
-        playerabicd = {}
-        playerabicdtemp = {}
-        playerabilist = list(playerabi)
-        for i in range(len(playerabi)):
-            playerabicd[playerabilist[i]] = playerabi[playerabilist[i]]["cd"]
-            playerabicdtemp[playerabilist[i]] = 0
-    monabicd = {}
-    monabicdtemp = {}
-    monabilist = list(monsterabi)
-    for i in range(len(monsterabi)):
-        monabicd[monabilist[i]] = monsterabi[monabilist[i]]["cd"]
-        monabicdtemp[monabilist[i]] = 0
-    while True:
-        playertimesstunned = 0
-        monstertimesstunned = 0
-        playerturn = False
-        monsterturn = False
-        playerstunsuccess = False
-        monsterstunsuccess = False
-        if playerabi == None:
-            pass
-        elif not playerallincd:
+    choice = input("Do you Fight or Flee? (1/2) ")
+    if User.ready:
+        if choice == "1":
+            print("Prepare for battle!")
+            time.sleep(0.5)
+            if playerabi != None:
+                playerabicd = {}
+                playerabicdtemp = {}
+                playerabilist = list(playerabi)
+                for i in range(len(playerabi)):
+                    playerabicd[playerabilist[i]] = playerabi[playerabilist[i]]["cd"]
+                    playerabicdtemp[playerabilist[i]] = 0
+            monabicd = {}
+            monabicdtemp = {}
+            monabilist = list(monsterabi)
+            for i in range(len(monsterabi)):
+                monabicd[monabilist[i]] = monsterabi[monabilist[i]]["cd"]
+                monabicdtemp[monabilist[i]] = 0
             while True:
-                abi = input(f"Which ability do you want to use? {list(playerabicdtemp)} ")
-                if abi in playerabi.keys():
-                    if playerabicdtemp[abi] == 0:
-                        if playerabi[abi]["type"] == "attack":
-                            playeratk = round(playeratk * (1+(playerabi[abi]["power"]/100)))
-                            break
-                        elif playerabi[abi]["type"] == "scare":
-                            playeratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/150)))
-                            stunchance = monsterabi[monabinum]["power"]
-                            damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
-                            monster_temp_hp -= damage_to_monster
-                            while monster_temp_hp > 0:
-                                pRand = random.randint(1, 100)
-                                if pRand <= stunchance:
+                playertimesstunned = 0
+                monstertimesstunned = 0
+                playerturn = False
+                monsterturn = False
+                playerstunsuccess = False
+                monsterstunsuccess = False
+                if playerabi == None:
+                    pass
+                elif not playerallincd:
+                    while True:
+                        abi = input(f"Which ability do you want to use? {list(playerabicdtemp)} ")
+                        if abi in playerabi.keys():
+                            if playerabicdtemp[abi] == 0:
+                                if playerabi[abi]["type"] == "attack":
+                                    playeratk = round(playeratk * (1+(playerabi[abi]["power"]/100)))
+                                    break
+                                elif playerabi[abi]["type"] == "scare":
+                                    playeratk = round(playeratk * (1+(monsterabi[monabinum]["power"]/150)))
+                                    stunchance = monsterabi[monabinum]["power"]
                                     damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
                                     monster_temp_hp -= damage_to_monster
-                                    playerstunsuccess = True
-                                    playertimesstunned += 1
-                                else:
-                                    playerturn = False
-                                    monsterturn = True
-                                    playerstunsuccess = False
+                                    while monster_temp_hp > 0:
+                                        pRand = random.randint(1, 100)
+                                        if pRand <= stunchance:
+                                            damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
+                                            monster_temp_hp -= damage_to_monster
+                                            playerstunsuccess = True
+                                            playertimesstunned += 1
+                                        else:
+                                            playerturn = False
+                                            monsterturn = True
+                                            playerstunsuccess = False
+                                            break
                                     break
-                            break
-                    else:
-                        input("Please choose another ability, this one is on cooldown.")
+                            else:
+                                input("Please choose another ability, this one is on cooldown.")
+                        else:
+                            input("Please select a valid option.")
+                    for i in range(len(playerabi)):
+                        if playerabicdtemp[playerabilist[i]] != 0:
+                            playerabicdtemp[playerabilist[i]] -= 1
+                        else: 
+                            pass
+                    playerabicdtemp[abi] = playerabi[abi]["cd"]
+                    for i in range(len(playerabi)):
+                        if playerabicdtemp[playerabilist[i]] == 0:
+                            playerallincd = False
+                        else:
+                            playerallincd = True
                 else:
-                    input("Please select a valid option.")
-            for i in range(len(playerabi)):
-                if playerabicdtemp[playerabilist[i]] != 0:
-                    playerabicdtemp[playerabilist[i]] -= 1
-                else: 
-                    pass
-            playerabicdtemp[abi] = playerabi[abi]["cd"]
-            for i in range(len(playerabi)):
-                if playerabicdtemp[playerabilist[i]] == 0:
-                    playerallincd = False
-                else:
-                    playerallincd = True
-        else:
-            input("All your abilities are on cooldown.")
-        if not monsterturn:
-            damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
-            monster_temp_hp -= damage_to_monster
-        if playerabi != None and playerabi[abi]["type"] != "scare": # ability type other than scare
-            input(f"You used {abi} and dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
-        elif playerabi != None and playerstunsuccess: # succesfully scared
-            input(f"You used {abi} and stunned {monstername} {playertimesstunned} time(s). You dealt {damage_to_monster} damage to {monstername} {playertimesstunned + 1} times. Monster HP is now {max(0, monster_temp_hp)}.")
-        elif playerabi != None and not playerstunsuccess: # scare ability but failed to scare
-            input(f"You tried using {abi} to scare the monster but you failed. You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
-        elif playerabi == None: # no ability
-            input(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
-        else: # this should never happen
-            input("BUG DETECTED (PLAYER)")
-        if monster_temp_hp <= 0:
-            input("You defeated the monster!")
-            win = True
-            return True
-        if not monallincd:
-            monlist = list(monsterabi.keys())
-            monabinum = monlist[0]
-            if monsterabi[monabinum]["type"] == "attack":
-                monsterdmg = round(monsteratk * (1+(monsterabi[monabinum]["power"]/100)))
-            elif monsterabi[monabinum]["type"] == "scare":
-                monsterdmg = round(monsteratk * (1+(monsterabi[monabinum]["power"]/150)))
-                stunchance = monsterabi[monabinum]["power"]
-                damage_to_player = max(1, monsterdmg - random.randint(1, playerdf))
-                player_temp_hp -= damage_to_player
-                while player_temp_hp > 0:
-                    mRand = random.randint(1, 100)
-                    if mRand <= stunchance:
-                        damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+                    input("All your abilities are on cooldown.")
+                if not monsterturn:
+                    damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
+                    monster_temp_hp -= damage_to_monster
+                if playerabi != None and playerabi[abi]["type"] != "scare": # ability type other than scare
+                    input(f"You used {abi} and dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+                elif playerabi != None and playerstunsuccess: # succesfully scared
+                    input(f"You used {abi} and stunned {monstername} {playertimesstunned} time(s). You dealt {damage_to_monster} damage to {monstername} {playertimesstunned + 1} times. Monster HP is now {max(0, monster_temp_hp)}.")
+                elif playerabi != None and not playerstunsuccess: # scare ability but failed to scare
+                    input(f"You tried using {abi} to scare the monster but you failed. You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+                elif playerabi == None: # no ability
+                    input(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+                else: # this should never happen
+                    input("BUG DETECTED (PLAYER)")
+                if monster_temp_hp <= 0:
+                    input("You defeated the monster!")
+                    win = True
+                    return True
+                if not monallincd:
+                    monlist = list(monsterabi.keys())
+                    monabinum = monlist[0]
+                    if monsterabi[monabinum]["type"] == "attack":
+                        monsterdmg = round(monsteratk * (1+(monsterabi[monabinum]["power"]/100)))
+                    elif monsterabi[monabinum]["type"] == "scare":
+                        monsterdmg = round(monsteratk * (1+(monsterabi[monabinum]["power"]/150)))
+                        stunchance = monsterabi[monabinum]["power"]
+                        damage_to_player = max(1, monsterdmg - random.randint(1, playerdf))
                         player_temp_hp -= damage_to_player
-                        monsterstunsuccess = True
-                        monstertimesstunned += 1
-                    else:
-                        monsterturn = False
-                        playerturn = True
-                        monsterstunsuccess = False
-                        break
-            monabicdtemp[monabinum] = monsterabi[monabinum]["cd"]
-            monallincd = True
+                        while player_temp_hp > 0:
+                            mRand = random.randint(1, 100)
+                            if mRand <= stunchance:
+                                damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+                                player_temp_hp -= damage_to_player
+                                monsterstunsuccess = True
+                                monstertimesstunned += 1
+                            else:
+                                monsterturn = False
+                                playerturn = True
+                                monsterstunsuccess = False
+                                break
+                    monabicdtemp[monabinum] = monsterabi[monabinum]["cd"]
+                    monallincd = True
 
-        else:
-            damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
-            player_temp_hp -= damage_to_player
-        if monabicdtemp[monabilist[0]] != 0:
-            monabicdtemp[monabilist[0]] -= 1
-        if monabicdtemp[monabilist[0]] == 0:
-            monallincd = False
-        if monsterabi[monabinum]["type"] != "scare": # ablity other than scare
-            input(f"{monstername} used {monabinum} and dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
-        elif monsterstunsuccess: # if stunned successfully
-            input(f"{monstername} used {monabinum} and stunned you {monsterstunsuccess} time(s). It dealt {damage_to_player} damage to you {monsterstunsuccess + 1} times. Your HP is now {max(0, player_temp_hp)}.")
-        elif not monsterstunsuccess: # used scare ability but failed to stun
-            input(f"{monstername} tried using {monabinum} to scare you but failed. It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
-        elif monallincd:
-            input(f"{monstername} tried using their ability but it was on cooldown ({(monabicdtemp[monabilist[0]])+1} turns left). It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
-        else: # this should never happen
-            print("BUG DETECTED (MONSTER)")
-        if player_temp_hp <= 0:
-            input("You were defeated by the monster.")
-            win = False
-            return False
-        input("Press enter to continue... ")
+                else:
+                    damage_to_player = max(1, monsteratk - random.randint(1, playerdf))
+                    player_temp_hp -= damage_to_player
+                if monabicdtemp[monabilist[0]] != 0:
+                    monabicdtemp[monabilist[0]] -= 1
+                if monabicdtemp[monabilist[0]] == 0:
+                    monallincd = False
+                if monsterabi[monabinum]["type"] != "scare": # ablity other than scare
+                    input(f"{monstername} used {monabinum} and dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+                elif monsterstunsuccess: # if stunned successfully
+                    input(f"{monstername} used {monabinum} and stunned you {monsterstunsuccess} time(s). It dealt {damage_to_player} damage to you {monsterstunsuccess + 1} times. Your HP is now {max(0, player_temp_hp)}.")
+                elif not monsterstunsuccess: # used scare ability but failed to stun
+                    input(f"{monstername} tried using {monabinum} to scare you but failed. It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+                elif monallincd:
+                    input(f"{monstername} tried using their ability but it was on cooldown ({(monabicdtemp[monabilist[0]])+1} turns left). It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+                else: # this should never happen
+                    print("BUG DETECTED (MONSTER)")
+                if player_temp_hp <= 0:
+                    input("You were defeated by the monster.")
+                    win = False
+                    return False
+                input("Press enter to continue... ")
+        elif choice == "2":
+            input("You have chosen to flee!")
+            fleechance = round(((monsterspd/playerspd)**-2)/2)
+            input(f"Your chance of succeeding is {fleechance}!")
+            for i in range(random.randint(1,3)):
+                print("Fleeing.")
+                time.sleep(1)
+                print("Fleeing..")
+                time.sleep(1)
+                print("Fleeing...")
+                time.sleep(1)
+            if fleechance < 1:
+                randflee = random.randint(1, 100)
+                if randflee <= fleechance*100:
+                    input("Congrats! You've successfully fleed from the monster! ")
+                    return None
+                else:
+                    input("Oh no! You failed to flee and was caught by the monster. ")
+                    win = False
+                    return False
+            else:
+                input("Congrats! You've successfully fleed from the monster! ")
+                return None
+        
+                
 
 def apply_points():
     if User.upg_pts > 0:
@@ -416,7 +449,7 @@ def start_tutorial():
     time.sleep(1)
     intro_monster = Monster(list(monsters.keys())[0], monsters["Goblin"]["lvl"], monsters["Goblin"]["xpdf"], monsters["Goblin"]["hp"], monsters["Goblin"]["atk"], monsters["Goblin"]["df"], monsters["Goblin"]["spd"], monsters["Goblin"]["abilities"], monsters["Goblin"]["abidropchance"], monsters["Goblin"]["g"])
     while True:
-        battle(User.hp, User.atk, User.df, None, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.abilities, intro_monster.name, intro_monster.lv)
+        battle(User.hp, User.atk, User.df, None, User.spd, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.abilities, intro_monster.name, intro_monster.lv, intro_monster.spd)
         if win:
             gain(intro_monster)
             input("You have completed the tutorial!")
@@ -429,6 +462,8 @@ def gain(monster):
     monlv, xp_gain, gold_gain, abi, abichance = monster.die()
     User.gain(monlv, xp_gain, gold_gain, abi, abichance)
 
+def lose():
+    User.lose()
     
 while True:
     if os.path.exists(savepath):
@@ -460,9 +495,13 @@ while User.ready == True:
             monlv = 1
         mon_items = Monster(monster_chosen, monlv, monsters[monster_chosen]["xpdf"], monsters[monster_chosen]["hp"], monsters[monster_chosen]["atk"], monsters[monster_chosen]["df"], monsters[monster_chosen]["spd"], monsters[monster_chosen]["abilities"], monsters[monster_chosen]["abidropchance"], monsters[monster_chosen]["g"])
         print(User.abilities)
-        battle(User.hp, User.atk, User.df, User.abilities, mon_items.hp, mon_items.atk, mon_items.df, mon_items.abilities, mon_items.name, mon_items.lv)
+        battle(User.hp, User.atk, User.df, User.abilities, User.spd, mon_items.hp, mon_items.atk, mon_items.df, mon_items.abilities, mon_items.name, mon_items.lv, mon_items.spd)
         if win:
             gain(mon_items)
+        elif not win:
+            lose()
+        else:
+            pass
     elif action == "2":
         if User.upg_pts == 0:
             input("You don't have any upgrade points.")
