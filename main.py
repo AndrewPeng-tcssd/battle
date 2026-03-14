@@ -6,8 +6,6 @@ import os
 import pygame
 
 pygame.mixer.init()
-pygame.mixer.music.load("MEGALOVANIA.mp3")
-pygame.mixer.music.play(loops=10000)
 
 monsters = {
     "Goblin": {"lvh": 20, "lvl": 1,"hp": 15, "atk": 10, "df": 10, "spd": 20, "abilities": {"Smash": {"power": 10, "type": "attack", "cd": 1}}, "abidropchance": 100, "xpdf": 5, "g": 5},
@@ -25,7 +23,7 @@ shopitems = {
     "Super Sword": {"attack": 25, "critchance": 20, "critdmg": 100, "abilities": {}},
     "Mega Sword": {"attack": 30, "critchance": 30, "critdmg": 150, "abilities": {"Mega Strike": {"power": 50, "subpower": 0, "type": "sword", "subtype": "dmginc"}}},
     "Hypersword": {"attack": 50, "critchance": 50, "critdmg": 200, "abilities": {"Witherborn": {"power": 100, "subpower": 2, "type": "sword", "subtype": "paralyze"}}},
-    "Hyperion": {"attack": 100, "critchance": 100, "critdmg": 300, "abilities": {"Terminate": {"power": 150, "subpower": 0, "type": "sword", "subtype": "dmginc"}}}
+    "Hyperion": {"attack": 100, "critchance": 100, "critdmg": 300, "abilities": {"Termination": {"power": 200, "subpower": 0, "type": "sword", "subtype": "dmginc"}}}
 }
 
 songs = ["MEGALOVANIA", "THE WORLD REVOLVING"]
@@ -81,6 +79,7 @@ class Player:
         self.df  = round(self.df  * mult)
         self.spd = round(self.spd * mult)
         print(f"{self.name} leveled up to {self.lv}!")
+        input("Press enter to continue... ")
     
     def apply_pts(self, amount, attribute):
         self.upg_pts -= amount
@@ -88,11 +87,14 @@ class Player:
             if attribute != "gold":
                 self.__dict__[attribute] += amount
                 print(f"You increased {attribute} by {amount}! It is now {self.__dict__[attribute]}")
+                input("Press enter to continue... ")
             else:
                 self.gold += amount*2
                 print(f"You increased your gold by {attribute*2}!")
+                input("Press enter to continue... ")
         else:
             print("Not enough upgrade points.")
+            input("Press enter to continue... ")
     
     def gain(self, monlv, xp, gold, abi, abichance):
         if self.lv-(monlv+1.0001) == 0:
@@ -110,13 +112,16 @@ class Player:
             self.xp -= (self.lv+1)
             self.level_up()
         print(f"Congrats! You have leveled up to {self.lv}")
+        input("Press enter to continue... ")
         
         print(f"You have gained {gold_amount} gold and {gold_amount} xp.")
+        input("Press enter to continue... ")
         chance = abichance
         rand = random.randint(1, 100)
         if rand <= chance and list(abi.keys())[0] not in self.abilities.keys():
             self.abilities.update(abi)
             print(f"You got {list(abi.keys())[0]}!")
+            input("Press enter to continue... ")
 
 class Monster:
     def __init__(self, monster, lv, xp, hp, atk, df, spd, abilities, abichance, g):
@@ -176,17 +181,19 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
     time.sleep(0.5)
     print("Prepare for battle!")
     time.sleep(0.5)
-    playerabicd = {}
-    playerabicdtemp = {}
-    playerabilist = list(playerabi)
-    for i in range(len(playerabi)):
-        playerabicd[playerabilist[i]] = playerabi[playerabilist[i]]["cd"]
-        playerabicdtemp[playerabilist[i]] = 0
+    if playerabi != None:
+        playerabicd = {}
+        playerabicdtemp = {}
+        playerabilist = list(playerabi)
+        for i in range(len(playerabi)):
+            playerabicd[playerabilist[i]] = playerabi[playerabilist[i]]["cd"]
+            playerabicdtemp[playerabilist[i]] = 0
     monabicd = {}
     monabicdtemp = {}
     monabilist = list(monsterabi)
-    monabicd[monabilist[i]] = monsterabi[monabilist[i]]["cd"]
-    monabicdtemp[monabilist[i]] = 0
+    for i in range(len(monsterabi)):
+        monabicd[monabilist[i]] = monsterabi[monabilist[i]]["cd"]
+        monabicdtemp[monabilist[i]] = 0
     while True:
         playertimesstunned = 0
         monstertimesstunned = 0
@@ -200,7 +207,7 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
             while True:
                 abi = input(f"Which ability do you want to use? {list(playerabicdtemp)} ")
                 if abi in playerabi.keys():
-                    if playerabicdtemp[playerabilist[abi]] == 0:
+                    if playerabicdtemp[abi] == 0:
                         if playerabi[abi]["type"] == "attack":
                             playeratk = round(playeratk * (1+(playerabi[abi]["power"]/100)))
                             break
@@ -223,37 +230,37 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
                                     break
                             break
                     else:
-                        print("Please choose another ability, this one is on cooldown.")
+                        input("Please choose another ability, this one is on cooldown.")
                 else:
-                    print("Please select a valid option.")
+                    input("Please select a valid option.")
             for i in range(len(playerabi)):
                 if playerabicdtemp[playerabilist[i]] != 0:
                     playerabicdtemp[playerabilist[i]] -= 1
                 else: 
                     pass
-            playerabicdtemp[playerabilist[abi]] = playerabi[playerabilist[abi]]["cd"]
+            playerabicdtemp[abi] = playerabi[abi]["cd"]
             for i in range(len(playerabi)):
                 if playerabicdtemp[playerabilist[i]] == 0:
                     playerallincd = False
                 else:
                     playerallincd = True
         else:
-            print("All your abilities are on cooldown.")
+            input("All your abilities are on cooldown.")
         if not monsterturn:
             damage_to_monster = max(1, playeratk - random.randint(1, monsterdf))
             monster_temp_hp -= damage_to_monster
         if playerabi != None and playerabi[abi]["type"] != "scare": # ability type other than scare
-            print(f"You used {abi} and dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+            input(f"You used {abi} and dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
         elif playerabi != None and playerstunsuccess: # succesfully scared
-            print(f"You used {abi} and stunned {monstername} {playertimesstunned} time(s). You dealt {damage_to_monster} damage to {monstername} {playertimesstunned + 1} times. Monster HP is now {max(0, monster_temp_hp)}.")
+            input(f"You used {abi} and stunned {monstername} {playertimesstunned} time(s). You dealt {damage_to_monster} damage to {monstername} {playertimesstunned + 1} times. Monster HP is now {max(0, monster_temp_hp)}.")
         elif playerabi != None and not playerstunsuccess: # scare ability but failed to scare
-            print(f"You tried using {abi} to scare the monster but you failed. You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+            input(f"You tried using {abi} to scare the monster but you failed. You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
         elif playerabi == None: # no ability
-            print(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
+            input(f"You dealt {damage_to_monster} damage to {monstername}. Monster HP is now {max(0, monster_temp_hp)}.")
         else: # this should never happen
-            print("BUG DETECTED (PLAYER)")
+            input("BUG DETECTED (PLAYER)")
         if monster_temp_hp <= 0:
-            print("You defeated the monster!")
+            input("You defeated the monster!")
             win = True
             return True
         if not monallincd:
@@ -278,7 +285,7 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
                         playerturn = True
                         monsterstunsuccess = False
                         break
-            monabicdtemp[monabilist[abi]] = monsterabi[monabilist[abi]]["cd"]
+            monabicdtemp[monabinum] = monsterabi[monabinum]["cd"]
             monallincd = True
 
         else:
@@ -289,20 +296,20 @@ def battle(playerhp, playeratk, playerdf, playerabi, monsterhp, monsteratk, mons
         if monabicdtemp[monabilist[0]] == 0:
             monallincd = False
         if monsterabi[monabinum]["type"] != "scare": # ablity other than scare
-            print(f"{monstername} used {monabinum} and dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+            input(f"{monstername} used {monabinum} and dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         elif monsterstunsuccess: # if stunned successfully
-            print(f"{monstername} used {monabinum} and stunned you {monsterstunsuccess} time(s). It dealt {damage_to_player} damage to you {monsterstunsuccess + 1} times. Your HP is now {max(0, player_temp_hp)}.")
+            input(f"{monstername} used {monabinum} and stunned you {monsterstunsuccess} time(s). It dealt {damage_to_player} damage to you {monsterstunsuccess + 1} times. Your HP is now {max(0, player_temp_hp)}.")
         elif not monsterstunsuccess: # used scare ability but failed to stun
-            print(f"{monstername} tried using {monabinum} to scare you but failed. It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+            input(f"{monstername} tried using {monabinum} to scare you but failed. It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         elif monallincd:
-            print(f"{monstername} tried using their ability but it was on cooldown ({(monabicdtemp[monabilist[0]])+1} turns left). It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
+            input(f"{monstername} tried using their ability but it was on cooldown ({(monabicdtemp[monabilist[0]])+1} turns left). It dealt {damage_to_player} damage to you. Your HP is now {max(0, player_temp_hp)}.")
         else: # this should never happen
             print("BUG DETECTED (MONSTER)")
         if player_temp_hp <= 0:
-            print("You were defeated by the monster.")
+            input("You were defeated by the monster.")
             win = False
             return False
-        time.sleep(1)
+        input("Press enter to continue... ")
 
 def apply_points():
     if User.upg_pts > 0:
@@ -314,8 +321,8 @@ def apply_points():
             if type_chosen:
                 break
             else:
-                print("Invalid choice.")
-        print(f"You have chosen {type_chosen}!")
+                input("Invalid choice.")
+        input(f"You have chosen {type_chosen}!")
         while True:
             try:
                 how_much = input(f"Choose the amount of points you want to apply(If you change your mind, enter 0): ")
@@ -323,11 +330,11 @@ def apply_points():
                     User.apply_pts(int(how_much), type_chosen)
                     break
                 else:
-                    print("You don't have this much.")
+                    input("You don't have this much.")
             except ValueError:
-                print("Not a valid number.")
+                input("Not a valid number.")
     else:
-        print("You don't have any points.")
+        input("You don't have any points.")
 
 def show_stats():
     print(f"Level: {User.lv}")
@@ -341,8 +348,8 @@ def show_stats():
 
 def new_player():
     print("Save does not exist.")
-    print("New user detected. Welcome to Battle World!")
-    print("Battle World is a text-based RPG where you can fight monsters, level up, and become stronger!")
+    input("New user detected. Welcome to Battle World! (Press enter to continue)")
+    input("Battle World is a text-based RPG where you can fight monsters, level up, and become stronger!")
     name = input("Please enter your name: ")
     while True:
         print("Welcome to Battle World! Please choose your class(enter the corresponding number).")
@@ -397,13 +404,10 @@ def load_save():
     User = Player(name, class_type, lv, xp, hp, atk, df, spd, abilities, gold, upg_pts, ready)
 
 def start_tutorial():
-    print("Welcome to Battle World!")
-    time.sleep(1)
-    print("Lets start with the basics.")
-    time.sleep(1)
-    print("You can fight monsters to gain experience and gold. Level up to become stronger!")
-    time.sleep(1)
-    print(f"Your current stats are:")
+    input("Welcome to Battle World!")
+    input("Lets start with the basics.")
+    input("You can fight monsters to gain experience and gold. Level up to become stronger!")
+    input(f"Your current stats are:")
     time.sleep(1)
     show_stats()
     time.sleep(3)
@@ -415,10 +419,10 @@ def start_tutorial():
         battle(User.hp, User.atk, User.df, None, intro_monster.hp, intro_monster.atk, intro_monster.df, intro_monster.abilities, intro_monster.name, intro_monster.lv)
         if win:
             gain(intro_monster)
-            print("You have completed the tutorial!")
+            input("You have completed the tutorial!")
             break
         else:
-            print("You have failed the tutorial. Please try again.")
+            input("You have failed the tutorial. Please try again.")
 
 
 def gain(monster):
@@ -442,7 +446,7 @@ while True:
 
 while User.ready == True:
     save()
-    action = input("What do you want to do? 1. Adventure 2. Apply points 3. Shop 4. View stats: ")
+    action = input("What do you want to do? 1. Adventure 2. Apply points 3. Shop 4. View stats 5. Songs: ")
     if action == "1":
         eligible_monsters = []
         for monster in monsters.keys():
@@ -450,33 +454,53 @@ while User.ready == True:
                 eligible_monsters.append(monster)     
         monster_rand_num = random.randint(1, len(eligible_monsters))
         monster_chosen = eligible_monsters[monster_rand_num-1]
-        print(monster_chosen)
-        print(eligible_monsters)
         monlv = random.randint(monsters[monster_chosen]["lvl"], monsters[monster_chosen]["lvh"])
         monlv = monlv - round(monsters[monster_chosen]["lvh"]/3) + User.lv
         if monlv < 1:
             monlv = 1
         mon_items = Monster(monster_chosen, monlv, monsters[monster_chosen]["xpdf"], monsters[monster_chosen]["hp"], monsters[monster_chosen]["atk"], monsters[monster_chosen]["df"], monsters[monster_chosen]["spd"], monsters[monster_chosen]["abilities"], monsters[monster_chosen]["abidropchance"], monsters[monster_chosen]["g"])
+        print(User.abilities)
         battle(User.hp, User.atk, User.df, User.abilities, mon_items.hp, mon_items.atk, mon_items.df, mon_items.abilities, mon_items.name, mon_items.lv)
         if win:
             gain(mon_items)
     elif action == "2":
         if User.upg_pts == 0:
-            print("You don't have any upgrade points.")
+            input("You don't have any upgrade points.")
         else:
             print("Apply Points")
             apply_points()
     elif action == "3":
         pass
     elif action == "4":
-        print("Your stats(enter e to exit):")
+        print("Your stats:")
         time.sleep(1)
         show_stats()
-        while True:
-            choice = input(" ")
-            if choice == "e":
-                break
-            else:
-                pass
+        input("Press enter to exit... ")
     elif action == "5":
-        song = input("")
+        choice_5 = input("Pick an option: 1. Play a song 2. Stop playing current song: ")
+        if choice_5 == "1":
+            for number, song in enumerate(songs, start=1):
+                print(f"{number}. {song}")
+                time.sleep(0.1)
+            while True:
+                songnum = int(input(f"Choose the number of the song you want to play: "))
+                if songnum >= 1:
+                    song_chosen = songs[songnum-1]
+                    break
+                else:
+                    input("Please enter a valid number.")
+            while True:
+                songloopnum = int(input(f"Play how many times? For just one time, enter 1. "))
+                if songloopnum >= 1:
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(f"music/{song_chosen}.mp3")
+                    pygame.mixer.music.play(loops=songloopnum)
+                    input(f"Now playing {song_chosen}!")
+                    break
+                else:
+                    input("Invalid amount. Please choose again.")
+        elif choice_5 == "2":
+            pygame.mixer.music.stop()
+            input("Successfully stopped song")
+        else:
+            input("Please choose a valid option.")
